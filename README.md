@@ -25,6 +25,7 @@ This project prioritizes safety (motors off until IMU ready), non-blocking async
 
 ## Table of Contents
 - Highlights
+- Known Good Config
 - Architecture Overview
 - Hardware & Wiring
 - Wiring Diagram
@@ -34,6 +35,7 @@ This project prioritizes safety (motors off until IMU ready), non-blocking async
 - Web UI & API
 - Safety Model
 - PID & Tuning
+- Manual PID Tuning Workflow
 - Debugging Tips
 - File Reference
 - UI Preview
@@ -49,6 +51,23 @@ This project prioritizes safety (motors off until IMU ready), non-blocking async
 - Clean PID lifecycle: resets on parameter change and before tuning windows
 - Tiny, built-in Web UI for live monitoring and editing PID values
 - Robust EEPROM layout and commit semantics
+
+---
+
+## ✅ Known Good Config
+Working PID values from the included screenshot (may depend on your motor polarity and wiring):
+- `kp = -29.85`
+- `ki = -450.00`
+- `kd = -1.70`
+- `setpoint = 0.00`
+
+Apply via API:
+
+`/setPID?kp=-29.85&ki=-450.00&kd=-1.70&setpoint=0`
+
+Notes
+- Negative gains indicate the chassis/motor polarity is reversed relative to the default. If your robot drives away from upright, flip motor wiring or change gain signs accordingly.
+- After applying, values persist to EEPROM.
 
 ---
 
@@ -203,6 +222,71 @@ EEPROM Persistence
 
 ---
 
+## 🧠 Manual PID Tuning Workflow
+This guide helps you manually tune Kp, Ki, and Kd using the built-in Web UI and `/setPID` endpoint. Start conservatively and prioritize safety.
+
+Preparation
+- Ensure the robot is on a flat surface and can lean without hitting obstacles.
+- Confirm motors only engage when IMU DMP packets are available (see Runtime Behavior).
+- Start with defaults: `kp=20`, `ki=0.5`, `kd=0.1`, `setpoint=0`.
+
+Controls to Use
+- Web UI inputs for `Kp`, `Ki`, `Kd`, `Setpoint`; click “Update PID”.
+- Or API: `/setPID?kp=...&ki=...&kd=...&setpoint=...`.
+- The system automatically resets PID state on parameter change, avoiding spikes.
+
+Step-by-Step
+1. Tune Kp first.
+  - Increase `kp` gradually until the robot responds quickly and begins slight oscillation around upright.
+  - If motion is sluggish, raise `kp`. If oscillation becomes large or unstable, lower `kp`.
+2. Add Kd to damp oscillations.
+  - Increase `kd` to reduce overshoot and oscillation. Too much `kd` makes the system “stiff” or noisy.
+3. Introduce small Ki to correct steady-state bias.
+  - Increase `ki` slowly to eliminate persistent lean (bias). Too much causes slow-growing oscillations or drift.
+4. Iterate.
+  - Revisit `kp` after setting `kd` and `ki`; small adjustments will be needed.
+
+Symptoms and Adjustments
+- Slow to stand up → Increase `kp`.
+- Oscillates/overshoots → Increase `kd` or reduce `kp`.
+- Holds a lean (bias) → Increase `ki` slightly.
+- “Twitchy” with noise → Reduce `kd` or add minimal `ki` and lower `kp`.
+- Integral windup evident (late surges) → Reduce `ki`; consider widening deadband or clamping integral (already clamped).
+
+Example Sequence
+- Start: `kp=20`, `ki=0.5`, `kd=0.1`.
+- Raise `kp` in steps of 2–3 until minor oscillation appears (e.g., `kp≈26`).
+- Increase `kd` in steps of 0.05–0.1 to settle oscillation (e.g., `kd≈0.20`).
+- Nudge `ki` by 0.05–0.1 to remove residual bias (e.g., `ki≈0.6`).
+- Fine-tune: ±1 on `kp`, ±0.05 on `kd`, ±0.05 on `ki`.
+
+Using Setpoint
+- Leave `setpoint=0` for upright balancing.
+- If your mechanical center differs, adjust `setpoint` slightly (±1–2°) to match the true vertical seen by pitch readings.
+
+Saving and Verifying
+- Values persist to EEPROM automatically via `/setPID`.
+- Verify in `/status`: `{ pitch, speed, kp, ki, kd, setpoint }`.
+
+Safety Tips
+- Make small changes; wait a few seconds to observe behavior.
+- If the robot accelerates unexpectedly, lower `kp` and/or `ki`, and ensure IMU DMP is stable.
+- Consider adding an arm/stop endpoint (see Safety Model suggestions) for quick disable.
+
+API Quick Examples
+- Increase proportional gain:
+  - `/setPID?kp=24&ki=0.5&kd=0.15&setpoint=0`
+- Add more damping:
+  - `/setPID?kp=24&ki=0.5&kd=0.25&setpoint=0`
+- Trim out bias:
+  - `/setPID?kp=24&ki=0.6&kd=0.25&setpoint=0`
+
+Notes
+- Tuning is sensitive to battery voltage, motor friction, and sensor noise; re-verify after hardware changes.
+- The control loop clamps output to `[-255, 255]`; extreme gains saturate motors and reduce control authority.
+
+---
+
 ## 🧪 Debugging Tips
 - If motors move at boot, verify:
   - Pins are OUTPUT+LOW before LEDC attach.
@@ -231,6 +315,16 @@ Key Functions
 - Motor card: Current speed (0–255)
 - PID card: Kp, Ki, Kd, Setpoint with editable inputs
 - Actions: Update PID, Start Tuning, Tuning Step
+
+Screenshot
+
+![UI Screenshot](docs/ui-screenshot.png)
+
+Working PID Values (from screenshot)
+- `kp = -29.85`
+- `ki = -450.00`
+- `kd = -1.70`
+- `setpoint = 0.00`
 
 ---
 
