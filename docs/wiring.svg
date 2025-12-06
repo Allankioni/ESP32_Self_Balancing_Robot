@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <style>
+    .card { fill: #ffffff; stroke: #ccd6dd; stroke-width: 2; }
+    .title { font: 700 18px sans-serif; fill: #222; }
+    .label { font: 600 14px sans-serif; fill: #444; }
+    .pin { font: 12px monospace; fill: #333; }
+    .wire { stroke-width: 3; }
+    .bus { stroke-dasharray: 6 4; stroke-width: 3; }
+  </style>
+
+  <!-- ESP32 Card -->
+  <rect x="60" y="60" width="260" height="360" rx="10" class="card"/>
+  <text x="80" y="90" class="title">ESP32 Dev Module</text>
+  <text x="80" y="120" class="label">I2C</text>
+  <text x="80" y="140" class="pin">SDA: GPIO21</text>
+  <text x="80" y="160" class="pin">SCL: GPIO22</text>
+  <text x="80" y="190" class="label">MPU6050 INT</text>
+  <text x="80" y="210" class="pin">INT: GPIO2</text>
+  <text x="80" y="240" class="label">LED</text>
+  <text x="80" y="260" class="pin">LED: GPIO13</text>
+  <text x="80" y="290" class="label">Motor A (LEDC)</text>
+  <text x="80" y="310" class="pin">A_IN1: GPIO27 (CH_A1=0)</text>
+  <text x="80" y="330" class="pin">A_IN2: GPIO14 (CH_A2=1)</text>
+  <text x="80" y="360" class="label">Motor B (LEDC)</text>
+  <text x="80" y="380" class="pin">B_IN3: GPIO26 (CH_B1=2)</text>
+  <text x="80" y="400" class="pin">B_IN4: GPIO12 (CH_B2=3)</text>
+
+  <!-- MPU6050 Card -->
+  <rect x="360" y="60" width="220" height="160" rx="10" class="card"/>
+  <text x="380" y="90" class="title">MPU6050</text>
+  <text x="380" y="120" class="pin">SDA</text>
+  <text x="380" y="140" class="pin">SCL</text>
+  <text x="380" y="160" class="pin">INT</text>
+
+  <!-- Motor Driver Card -->
+  <rect x="360" y="260" width="260" height="160" rx="10" class="card"/>
+  <text x="380" y="290" class="title">Dual H-Bridge</text>
+  <text x="380" y="320" class="pin">A_IN1</text>
+  <text x="450" y="320" class="pin">A_IN2</text>
+  <text x="520" y="320" class="pin">B_IN3</text>
+  <text x="590" y="320" class="pin">B_IN4</text>
+  <text x="380" y="350" class="pin">OUTA → Motor A</text>
+  <text x="520" y="350" class="pin">OUTB → Motor B</text>
+
+  <!-- Wires: I2C SDA/SCL -->
+  <line x1="200" y1="140" x2="360" y2="120" stroke="#2b8a3e" class="wire"/>
+  <line x1="200" y1="160" x2="360" y2="140" stroke="#1c7ed6" class="wire"/>
+  <text x="260" y="110" class="label" fill="#2b8a3e">SDA</text>
+  <text x="260" y="150" class="label" fill="#1c7ed6">SCL</text>
+
+  <!-- Wire: INT -->
+  <line x1="200" y1="210" x2="360" y2="160" stroke="#e8590c" class="wire"/>
+  <text x="280" y="185" class="label" fill="#e8590c">INT</text>
+
+  <!-- Wires: Motor inputs from ESP32 to H-Bridge -->
+  <line x1="240" y1="310" x2="380" y2="320" stroke="#495057" class="wire"/>
+  <line x1="240" y1="330" x2="450" y2="320" stroke="#495057" class="wire"/>
+  <line x1="240" y1="380" x2="520" y2="320" stroke="#495057" class="wire"/>
+  <line x1="240" y1="400" x2="590" y2="320" stroke="#495057" class="wire"/>
+
+  <!-- Power & GND (diagrammatic) -->
+  <rect x="660" y="60" width="240" height="100" rx="10" class="card"/>
+  <text x="680" y="90" class="title">Power</text>
+  <text x="680" y="120" class="pin">Battery → H-Bridge Vmotor</text>
+  <text x="680" y="140" class="pin">5V (optional logic) → IMU Vcc</text>
+
+  <line x1="200" y1="420" x2="740" y2="140" stroke="#343a40" class="bus"/>
+  <text x="760" y="150" class="label">Common GND</text>
+
+  <!-- Legend -->
+  <rect x="660" y="200" width="240" height="220" rx="10" class="card"/>
+  <text x="680" y="230" class="title">Legend</text>
+  <circle cx="690" cy="260" r="5" fill="#2b8a3e"/><text x="705" y="265" class="label">SDA</text>
+  <circle cx="690" cy="290" r="5" fill="#1c7ed6"/><text x="705" y="295" class="label">SCL</text>
+  <circle cx="690" cy="320" r="5" fill="#e8590c"/><text x="705" y="325" class="label">INT</text>
+  <line x1="685" y1="350" x2="695" y2="350" stroke="#495057" class="wire"/>
+  <text x="705" y="355" class="label">Motor control (LEDC)</text>
+  <line x1="685" y1="380" x2="700" y2="380" stroke="#343a40" class="bus"/>
+  <text x="705" y="385" class="label">Common ground</text>
+
+  <!-- Footer note -->
+  <text x="60" y="500" class="pin">Note: PWM via LEDC channels at 5 kHz, 8-bit resolution.</text>
+</svg>
